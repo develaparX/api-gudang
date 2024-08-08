@@ -2,17 +2,19 @@ package service
 
 import (
 	"context"
+	"time"
 
+	"api-gudang/dto"
 	"api-gudang/internal/models"
 	"api-gudang/internal/repository"
 )
 
 type BarangService interface {
-	Create(ctx context.Context, barang *models.Barang) error
-	Update(ctx context.Context, barang *models.Barang) error
+	Create(ctx context.Context, barang *dto.Barang) error
+	Update(ctx context.Context, barang *dto.Barang) error
 	Delete(ctx context.Context, barangID string) error
 	GetByID(ctx context.Context, barangID string) (*models.Barang, error)
-	GetAll(ctx context.Context, filters *models.BarangFilters) ([]*models.Barang, error)
+	GetAll(ctx context.Context, limit, offset int, kodeGudang *string, expiredBarang *time.Time) ([]*models.Barang, error)
 	GetExpiredBarang(ctx context.Context) ([]*models.Barang, error)
 }
 
@@ -28,22 +30,22 @@ func NewBarangService(barangRepo repository.BarangRepository, gudangRepo reposit
 	}
 }
 
-func (s *barangService) Create(ctx context.Context, barang *models.Barang) error {
-	// Check if the gudang exists
-	_, err := s.gudangRepo.GetByKode(ctx, barang.KodeGudang)
+func (s *barangService) Create(ctx context.Context, barang *dto.Barang) error {
+	gudang, err := s.gudangRepo.GetByKode(ctx, barang.KodeGudang)
 	if err != nil {
 		return err
 	}
+	barang.KodeGudang = gudang.KodeGudang
 
 	return s.barangRepo.Create(ctx, barang)
 }
 
-func (s *barangService) Update(ctx context.Context, barang *models.Barang) error {
-	// Check if the gudang exists
-	_, err := s.gudangRepo.GetByKode(ctx, barang.KodeGudang)
+func (s *barangService) Update(ctx context.Context, barang *dto.Barang) error {
+	gudang, err := s.gudangRepo.GetByKode(ctx, barang.KodeGudang)
 	if err != nil {
 		return err
 	}
+	barang.KodeGudang = gudang.KodeGudang
 
 	return s.barangRepo.Update(ctx, barang)
 }
@@ -53,11 +55,34 @@ func (s *barangService) Delete(ctx context.Context, barangID string) error {
 }
 
 func (s *barangService) GetByID(ctx context.Context, barangID string) (*models.Barang, error) {
-	return s.barangRepo.GetByID(ctx, barangID)
+	barang, err := s.barangRepo.GetByID(ctx, barangID)
+	if err != nil {
+		return nil, err
+	}
+
+	gudang, err := s.gudangRepo.GetByKode(ctx, barang.Gudang[0].KodeGudang)
+	if err != nil {
+		return nil, err
+	}
+	barang.Gudang[0].NamaGudang = gudang.NamaGudang
+
+	return barang, nil
 }
 
-func (s *barangService) GetAll(ctx context.Context, filters *models.BarangFilters) ([]*models.Barang, error) {
-	return s.barangRepo.GetAll(ctx, filters)
+func (s *barangService) GetAll(ctx context.Context, limit, offset int, kodeGudang *string, expiredBarang *time.Time) ([]*models.Barang, error) {
+	barangs, err := s.barangRepo.GetAll(ctx, limit, offset, kodeGudang, expiredBarang)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, barang := range barangs {
+		gudang, err := s.gudangRepo.GetByKode(ctx, barang.Gudang[0].KodeGudang)
+		if err != nil {
+			return nil, err
+		}
+		barang.Gudang[0].NamaGudang = gudang.NamaGudang
+	}
+	return barangs, nil
 }
 
 func (s *barangService) GetExpiredBarang(ctx context.Context) ([]*models.Barang, error) {
@@ -66,14 +91,12 @@ func (s *barangService) GetExpiredBarang(ctx context.Context) ([]*models.Barang,
 		return nil, err
 	}
 
-	// Fetch the gudang names for the expired barangs
 	for _, barang := range expiredBarangs {
-		gudang, err := s.gudangRepo.GetByKode(ctx, barang.KodeGudang)
+		gudang, err := s.gudangRepo.GetByKode(ctx, barang.Gudang[0].KodeGudang)
 		if err != nil {
 			return nil, err
 		}
-		barang.NamaGudang = gudang.NamaGudang
+		barang.Gudang[0].NamaGudang = gudang.NamaGudang
 	}
-
 	return expiredBarangs, nil
 }

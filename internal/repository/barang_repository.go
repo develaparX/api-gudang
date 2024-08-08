@@ -1,19 +1,20 @@
 package repository
 
 import (
+	"api-gudang/dto"
+	"api-gudang/internal/models"
 	"context"
 	"database/sql"
 	"fmt"
-
-	"api-gudang/internal/models"
+	"time"
 )
 
 type BarangRepository interface {
-	Create(ctx context.Context, barang *models.Barang) error
-	Update(ctx context.Context, barang *models.Barang) error
+	Create(ctx context.Context, barang *dto.Barang) error
+	Update(ctx context.Context, barang *dto.Barang) error
 	Delete(ctx context.Context, barangID string) error
 	GetByID(ctx context.Context, barangID string) (*models.Barang, error)
-	GetAll(ctx context.Context, filters *models.BarangFilters) ([]*models.Barang, error)
+	GetAll(ctx context.Context, limit, offset int, kodeGudang *string, expiredBarang *time.Time) ([]*models.Barang, error)
 	GetExpiredBarang(ctx context.Context) ([]*models.Barang, error)
 }
 
@@ -25,18 +26,26 @@ func NewBarangRepository(db *sql.DB) BarangRepository {
 	return &barangRepository{db: db}
 }
 
-func (r *barangRepository) Create(ctx context.Context, barang *models.Barang) error {
-	query := `INSERT INTO barang (kode_barang, nama_barang, harga_barang, jumlah_barang, expired_barang, kode_gudang) VALUES ($1,$2,$3,$4,$5,$6)`
-	_, err := r.db.ExecContext(ctx, query, barang.KodeBarang, barang.NamaBarang, barang.HargaBarang, barang.JumlahBarang, barang.ExpiredBarang, barang.KodeGudang)
+func (r *barangRepository) Create(ctx context.Context, barang *dto.Barang) error {
+	query := `INSERT INTO barang (kode_barang, nama_barang, harga_barang, jumlah_barang, expired_barang, kode_gudang) 
+              VALUES ($1, $2, $3, $4, $5, $6)`
+
+	// Asumsikan Gudang sudah ada di model Barang
+	_, err := r.db.ExecContext(ctx, query, barang.KodeBarang, barang.NamaBarang, barang.HargaBarang,
+		barang.JumlahBarang, barang.ExpiredBarang, barang.KodeGudang)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (r *barangRepository) Update(ctx context.Context, barang *models.Barang) error {
-	query := `UPDATE barang SET kode_barang = $1, nama_barang = $2, harga_barang = $3, jumlah_barang = $4, expired_barang = $5, kode_gudang = $6 WHERE barang_id = $7`
-	_, err := r.db.ExecContext(ctx, query, barang.KodeBarang, barang.NamaBarang, barang.HargaBarang, barang.JumlahBarang, barang.ExpiredBarang, barang.KodeGudang, barang.BarangID)
+func (r *barangRepository) Update(ctx context.Context, barang *dto.Barang) error {
+	query := `UPDATE barang SET kode_barang = $1, nama_barang = $2, harga_barang = $3, jumlah_barang = $4, expired_barang = $5, 
+              kode_gudang = $6 WHERE barang_id = $7`
+
+	// Asumsikan Gudang sudah ada di model Barang
+	_, err := r.db.ExecContext(ctx, query, barang.KodeBarang, barang.NamaBarang, barang.HargaBarang, barang.JumlahBarang,
+		barang.ExpiredBarang, barang.KodeGudang, barang.BarangID)
 	if err != nil {
 		return err
 	}
@@ -53,85 +62,74 @@ func (r *barangRepository) Delete(ctx context.Context, barangID string) error {
 }
 
 func (r *barangRepository) GetByID(ctx context.Context, barangID string) (*models.Barang, error) {
-	query := `SELECT barang_id, kode_barang, nama_barang, harga_barang, jumlah_barang, expired_barang, kode_gudang FROM barang WHERE barang_id = $1`
+	query := `SELECT barang_id, kode_barang, nama_barang, harga_barang, jumlah_barang, expired_barang, kode_gudang
+              FROM barang WHERE barang_id = $1`
+
 	row := r.db.QueryRowContext(ctx, query, barangID)
-	barang := &models.Barang{}
-	err := row.Scan(&barang.BarangID, &barang.KodeBarang, &barang.NamaBarang, &barang.HargaBarang, &barang.JumlahBarang, &barang.ExpiredBarang, &barang.KodeGudang)
+
+	var barang models.Barang
+	var gudang models.Gudang
+	err := row.Scan(&barang.BarangID, &barang.KodeBarang, &barang.NamaBarang, &barang.HargaBarang, &barang.JumlahBarang,
+		&barang.ExpiredBarang, &gudang.KodeGudang)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, fmt.Errorf("barang with ID %s not found", barangID)
 		}
 		return nil, err
 	}
-	return barang, nil
+
+	barang.Gudang = append(barang.Gudang, gudang)
+	return &barang, nil
 }
 
-func (r *barangRepository) GetAll(ctx context.Context, filters *models.BarangFilters) ([]*models.Barang, error) {
-	query := `SELECT barang_id, kode_barang, nama_barang, harga_barang, jumlah_barang, expired_barang, kode_gudang 
-	          FROM barang WHERE 1=1`
-	var args []interface{}
-	i := 1
+func (r *barangRepository) GetAll(ctx context.Context, limit, offset int, kodeGudang *string, expiredBarang *time.Time) ([]*models.Barang, error) {
+	query := `SELECT barang_id, kode_barang, nama_barang, harga_barang, jumlah_barang, expired_barang, kode_gudang, nama_gudang 
+              FROM get_barang_list($1, $2, $3, $4)`
 
-	// Append conditionally based on available filters
-	if filters.KodeGudang != "" {
-		query += fmt.Sprintf(" AND kode_gudang = $%d", i)
-		args = append(args, filters.KodeGudang)
-		i++
-	}
-	if filters.ExpiredBarang != "" {
-		query += fmt.Sprintf(" AND expired_barang = $%d", i)
-		args = append(args, filters.ExpiredBarang)
-		i++
-	}
-
-	query += " ORDER BY expired_barang"
-
-	rows, err := r.db.QueryContext(ctx, query, args...)
+	rows, err := r.db.QueryContext(ctx, query, limit, offset, kodeGudang, expiredBarang)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	barangs := make([]*models.Barang, 0)
+	var barangs []*models.Barang
+
 	for rows.Next() {
-		barang := &models.Barang{}
-		err := rows.Scan(&barang.BarangID, &barang.KodeBarang, &barang.NamaBarang, &barang.HargaBarang, &barang.JumlahBarang, &barang.ExpiredBarang, &barang.KodeGudang)
+		var barang models.Barang
+		var gudang models.Gudang
+		err := rows.Scan(&barang.BarangID, &barang.KodeBarang, &barang.NamaBarang, &barang.HargaBarang, &barang.JumlahBarang,
+			&barang.ExpiredBarang, &gudang.KodeGudang, &gudang.NamaGudang)
 		if err != nil {
 			return nil, err
 		}
-		barangs = append(barangs, barang)
+		barang.Gudang = append(barang.Gudang, gudang)
+		barangs = append(barangs, &barang)
 	}
-
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-
 	return barangs, nil
 }
 
 func (r *barangRepository) GetExpiredBarang(ctx context.Context) ([]*models.Barang, error) {
-	query := `SELECT barang_id, kode_barang, nama_barang, harga_barang, jumlah_barang, expired_barang, kode_gudang 
-              FROM barang
-              WHERE expired_barang < CURRENT_DATE`
+	query := `SELECT barang_id, kode_barang, nama_barang, harga_barang, jumlah_barang, expired_barang, kode_gudang, nama_gudang 
+              FROM get_barang_list(100, 0, NULL, CURRENT_DATE)`
+
 	rows, err := r.db.QueryContext(ctx, query)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	barangs := make([]*models.Barang, 0)
+	var barangs []*models.Barang
+
 	for rows.Next() {
-		barang := &models.Barang{}
-		err := rows.Scan(&barang.BarangID, &barang.KodeBarang, &barang.NamaBarang, &barang.HargaBarang, &barang.JumlahBarang, &barang.ExpiredBarang, &barang.KodeGudang)
+		var barang models.Barang
+		var gudang models.Gudang
+		err := rows.Scan(&barang.BarangID, &barang.KodeBarang, &barang.NamaBarang, &barang.HargaBarang, &barang.JumlahBarang,
+			&barang.ExpiredBarang, &gudang.KodeGudang, &gudang.NamaGudang)
 		if err != nil {
 			return nil, err
 		}
-		barangs = append(barangs, barang)
+		barang.Gudang = append(barang.Gudang, gudang)
+		barangs = append(barangs, &barang)
 	}
-
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-
 	return barangs, nil
 }

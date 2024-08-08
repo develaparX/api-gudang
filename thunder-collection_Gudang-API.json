@@ -1,0 +1,178 @@
+{
+    "clientName": "Thunder Client",
+    "collectionName": "Gudang-API",
+    "collectionId": "311c089a-8567-49c8-b7db-91b6593d8f72",
+    "dateExported": "2024-08-08T20:26:46.967Z",
+    "version": "1.2",
+    "folders": [
+        {
+            "_id": "35221d6a-e7c3-48e7-adb8-35f2e213a6f6",
+            "name": "Barang",
+            "containerId": "",
+            "created": "2024-08-08T19:19:30.452Z",
+            "sortNum": 10000
+        },
+        {
+            "_id": "b687cb54-b859-44b5-a95f-bb2562bf2223",
+            "name": "Gudang",
+            "containerId": "",
+            "created": "2024-08-08T19:19:37.219Z",
+            "sortNum": 20000
+        }
+    ],
+    "requests": [
+        {
+            "_id": "6ff147a0-9469-4b40-aab4-0d41b915ccc3",
+            "colId": "311c089a-8567-49c8-b7db-91b6593d8f72",
+            "containerId": "35221d6a-e7c3-48e7-adb8-35f2e213a6f6",
+            "name": "CREATE BARANG",
+            "url": "localhost:3500/barang",
+            "method": "POST",
+            "sortNum": 10000,
+            "created": "2024-08-08T19:20:00.027Z",
+            "modified": "2024-08-08T20:19:39.890Z",
+            "headers": [],
+            "body": {
+                "type": "json",
+                "raw": "{\n  \"kode_barang\":\"AABB1\",\n  \"nama_barang\":\"permen\",\n  \"harga_barang\":10000,\n  \"jumlah_barang\":10,\n  \"expired_barang\":\"2025-01-02T15:04:05Z\",\n  \"kode_gudang\": \"G001\"\n}\n",
+                "form": []
+            }
+        },
+        {
+            "_id": "538415a9-3a66-4a73-a7a9-069451cbb958",
+            "colId": "311c089a-8567-49c8-b7db-91b6593d8f72",
+            "containerId": "b687cb54-b859-44b5-a95f-bb2562bf2223",
+            "name": "GET ALL GUDANG",
+            "url": "localhost:3500/gudang",
+            "method": "GET",
+            "sortNum": 20000,
+            "created": "2024-08-08T19:21:51.272Z",
+            "modified": "2024-08-08T20:11:19.960Z",
+            "headers": []
+        },
+        {
+            "_id": "22b8bf85-b2e3-42b3-aecf-9c189c75b947",
+            "colId": "311c089a-8567-49c8-b7db-91b6593d8f72",
+            "containerId": "b687cb54-b859-44b5-a95f-bb2562bf2223",
+            "name": "GET GUDANG BY KODE GUDANG",
+            "url": "localhost:3500/gudang/G001",
+            "method": "GET",
+            "sortNum": 30000,
+            "created": "2024-08-08T19:22:39.768Z",
+            "modified": "2024-08-08T19:22:39.768Z",
+            "headers": []
+        },
+        {
+            "_id": "d3fb818b-f8e2-4281-8a8d-a98283a5e5e2",
+            "colId": "311c089a-8567-49c8-b7db-91b6593d8f72",
+            "containerId": "b687cb54-b859-44b5-a95f-bb2562bf2223",
+            "name": "DELETE GUDANG",
+            "url": "localhost:3500/gudang/G001",
+            "method": "DELETE",
+            "sortNum": 40000,
+            "created": "2024-08-08T19:26:37.792Z",
+            "modified": "2024-08-08T19:26:37.792Z",
+            "headers": []
+        },
+        {
+            "_id": "4d4c5d13-f65a-4509-b1f8-7dd796958f0a",
+            "colId": "311c089a-8567-49c8-b7db-91b6593d8f72",
+            "containerId": "b687cb54-b859-44b5-a95f-bb2562bf2223",
+            "name": "UPDATE GUDANG",
+            "url": "localhost:3500/gudang",
+            "method": "PUT",
+            "sortNum": 50000,
+            "created": "2024-08-08T20:15:44.018Z",
+            "modified": "2024-08-08T20:15:44.018Z",
+            "headers": [],
+            "body": {
+                "type": "json",
+                "raw": "{\n  \"kode_gudang\":\"G001\",\n  \"nama_gudang\":\"Gudang Banjarnegara\"\n}",
+                "form": []
+            }
+        },
+        {
+            "_id": "4b75a7dc-d2a2-457f-928c-e75174734981",
+            "colId": "311c089a-8567-49c8-b7db-91b6593d8f72",
+            "containerId": "b687cb54-b859-44b5-a95f-bb2562bf2223",
+            "name": "CREATE GUDANG",
+            "url": "localhost:3500/gudang",
+            "method": "POST",
+            "sortNum": 60000,
+            "created": "2024-08-08T20:17:05.086Z",
+            "modified": "2024-08-08T20:17:05.086Z",
+            "headers": [],
+            "body": {
+                "type": "json",
+                "raw": "{\n  \"kode_gudang\":\"G005\",\n  \"nama_gudang\":\"Gudang Banjarnegara\"\n}",
+                "form": []
+            }
+        },
+        {
+            "_id": "8ce44e82-7994-4544-91f4-1cca16a53a2a",
+            "colId": "311c089a-8567-49c8-b7db-91b6593d8f72",
+            "containerId": "35221d6a-e7c3-48e7-adb8-35f2e213a6f6",
+            "name": "UPDATE BARANG",
+            "url": "localhost:3500/barang",
+            "method": "GET",
+            "sortNum": 70000,
+            "created": "2024-08-08T20:19:06.748Z",
+            "modified": "2024-08-08T20:20:06.558Z",
+            "headers": [],
+            "body": {
+                "type": "json",
+                "raw": "{\n  \"kode_barang\":\"AABB1\",\n  \"nama_barang\":\"Topi\",\n  \"harga_barang\":10000,\n  \"jumlah_barang\":10,\n  \"expired_barang\":\"2025-01-02T15:04:05Z\",\n  \"kode_gudang\": \"G001\"\n}\n",
+                "form": []
+            }
+        },
+        {
+            "_id": "2a672d28-2bd8-4b95-9d30-ce075bd1c68d",
+            "colId": "311c089a-8567-49c8-b7db-91b6593d8f72",
+            "containerId": "35221d6a-e7c3-48e7-adb8-35f2e213a6f6",
+            "name": "DELETE BARANG",
+            "url": "localhost:3500/barang/08eddc78-cb73-462c-adbc-12f50867754b",
+            "method": "DELETE",
+            "sortNum": 80000,
+            "created": "2024-08-08T20:20:25.218Z",
+            "modified": "2024-08-08T20:20:46.962Z",
+            "headers": []
+        },
+        {
+            "_id": "fa5d9858-ee65-4bb3-bc6d-eb31290d3f83",
+            "colId": "311c089a-8567-49c8-b7db-91b6593d8f72",
+            "containerId": "35221d6a-e7c3-48e7-adb8-35f2e213a6f6",
+            "name": "GET BARANG BY ID",
+            "url": "localhost:3500/barang/8bfbb937-9c20-4a40-9e04-9f583284791f",
+            "method": "GET",
+            "sortNum": 90000,
+            "created": "2024-08-08T20:21:00.471Z",
+            "modified": "2024-08-08T20:21:52.875Z",
+            "headers": []
+        },
+        {
+            "_id": "eac62e54-b41b-4734-bb2b-ea599c4d0d1d",
+            "colId": "311c089a-8567-49c8-b7db-91b6593d8f72",
+            "containerId": "35221d6a-e7c3-48e7-adb8-35f2e213a6f6",
+            "name": "GET ALL BARANG",
+            "url": "localhost:3500/barang",
+            "method": "GET",
+            "sortNum": 100000,
+            "created": "2024-08-08T20:21:12.604Z",
+            "modified": "2024-08-08T20:21:25.256Z",
+            "headers": []
+        },
+        {
+            "_id": "3e637cbb-da68-4442-ba28-2e4d1660d2e7",
+            "colId": "311c089a-8567-49c8-b7db-91b6593d8f72",
+            "containerId": "35221d6a-e7c3-48e7-adb8-35f2e213a6f6",
+            "name": "GET EXPIRED BARANG",
+            "url": "localhost:3500/barang/expired",
+            "method": "GET",
+            "sortNum": 130000,
+            "created": "2024-08-08T20:26:15.386Z",
+            "modified": "2024-08-08T20:26:32.395Z",
+            "headers": []
+        }
+    ],
+    "ref": "-98rxmjztnBBorDi_mEaoIqIAGtAFfBu9c98YBU1W7U_XiZ4zfiA6gV-3Km0ZLyTVJTdzxi2tFnhm3rsAtmt0A"
+}

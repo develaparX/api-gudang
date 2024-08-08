@@ -2,9 +2,10 @@ package handler
 
 import (
 	"net/http"
+	"strconv"
+	"time"
 
 	"api-gudang/dto"
-	"api-gudang/internal/models"
 	"api-gudang/internal/service"
 
 	"github.com/gin-gonic/gin"
@@ -23,7 +24,7 @@ func NewBarangHandler(barangService service.BarangService, gudangService service
 }
 
 func (h *BarangHandler) CreateBarang(c *gin.Context) {
-	var barang models.Barang
+	var barang dto.Barang
 	if err := c.ShouldBindJSON(&barang); err != nil {
 		c.JSON(http.StatusBadRequest, dto.Response{
 			Success: false,
@@ -49,7 +50,7 @@ func (h *BarangHandler) CreateBarang(c *gin.Context) {
 }
 
 func (h *BarangHandler) UpdateBarang(c *gin.Context) {
-	var barang models.Barang
+	var barang dto.Barang
 	if err := c.ShouldBindJSON(&barang); err != nil {
 		c.JSON(http.StatusBadRequest, dto.Response{
 			Success: false,
@@ -112,15 +113,30 @@ func (h *BarangHandler) GetBarangByID(c *gin.Context) {
 }
 
 func (h *BarangHandler) GetAllBarang(c *gin.Context) {
-	kodeGudang := c.Query("kode_gudang")
-	expiredBarang := c.Query("expired_barang")
+	limit := 10
+	offset := 0
 
-	filters := &models.BarangFilters{
-		KodeGudang:    kodeGudang,
-		ExpiredBarang: expiredBarang,
+	if l := c.Query("limit"); l != "" {
+		limit, _ = strconv.Atoi(l)
+	}
+	if o := c.Query("offset"); o != "" {
+		offset, _ = strconv.Atoi(o)
 	}
 
-	barangs, err := h.barangService.GetAll(c.Request.Context(), filters)
+	kodeGudang := c.Query("kode_gudang")
+	var kodeGudangPtr *string
+	if kodeGudang != "" {
+		kodeGudangPtr = &kodeGudang
+	}
+
+	expiredBarang := c.Query("expired_barang")
+	var expiredBarangPtr *time.Time
+	if expiredBarang != "" {
+		expiredTime, _ := time.Parse("2006-01-02", expiredBarang)
+		expiredBarangPtr = &expiredTime
+	}
+
+	barangs, err := h.barangService.GetAll(c.Request.Context(), limit, offset, kodeGudangPtr, expiredBarangPtr)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, dto.Response{
 			Success: false,
@@ -133,5 +149,22 @@ func (h *BarangHandler) GetAllBarang(c *gin.Context) {
 		Success: true,
 		Message: "successfully retrieved",
 		Data:    barangs,
+	})
+}
+
+func (h *BarangHandler) GetExpiredBarang(c *gin.Context) {
+	expiredBarangs, err := h.barangService.GetExpiredBarang(c.Request.Context())
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, dto.Response{
+			Success: false,
+			Message: err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, dto.Response{
+		Success: true,
+		Message: "successfully retreived",
+		Data:    expiredBarangs,
 	})
 }

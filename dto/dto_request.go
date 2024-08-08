@@ -1,4 +1,4 @@
-package models
+package dto
 
 import "time"
 
@@ -9,10 +9,5 @@ type Barang struct {
 	HargaBarang   int       `json:"harga_barang"`
 	JumlahBarang  int       `json:"jumlah_barang"`
 	ExpiredBarang time.Time `json:"expired_barang"`
-	Gudang        []Gudang  `json:"gudang_detail"`
-}
-
-type BarangFilters struct {
-	KodeGudang    string
-	ExpiredBarang time.Time
+	KodeGudang    string    `json:"kode_gudang"`
 }

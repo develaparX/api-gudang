@@ -52,7 +52,7 @@ func (r *gudangRepository) Delete(ctx context.Context, kodeGudang string) error 
 }
 
 func (r *gudangRepository) GetByKode(ctx context.Context, kodeGudang string) (*models.Gudang, error) {
-	query := `SELECT kode_gudang, nama_gudang FROM gudang WHERE kode_gudang = $1`
+	query := `SELECT  kode_gudang, nama_gudang FROM gudang WHERE kode_gudang = $1`
 	row := r.db.QueryRowContext(ctx, query, kodeGudang)
 	gudang := &models.Gudang{}
 	err := row.Scan(&gudang.KodeGudang, &gudang.NamaGudang)

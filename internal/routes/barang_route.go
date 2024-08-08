@@ -14,5 +14,6 @@ func RegisterBarangRoutes(r *gin.Engine, barangHandler *handler.BarangHandler) {
 		barangGroup.DELETE("/:barangID", barangHandler.DeleteBarang)
 		barangGroup.GET("/:barangID", barangHandler.GetBarangByID)
 		barangGroup.GET("/", barangHandler.GetAllBarang)
+		barangGroup.GET("/expired", barangHandler.GetExpiredBarang)
 	}
 }
